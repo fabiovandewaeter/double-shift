@@ -3,19 +3,14 @@ use game_core::coordination::gestion_jeu::GestionJeu;
 
 #[component]
 pub fn DescriptionCombat() -> Element {
-    // récupérer perso
-    let signal_gestion_jeu = use_context::<Signal<GestionJeu>>();
-    let jeu = signal_gestion_jeu.read();
+    let signal_jeu = use_context::<Signal<GestionJeu>>();
+    let jeu = signal_jeu.read();
 
-    let equipe_active = if jeu.est_tour_joueur() {
-        "Player's team"
-    } else {
-        "Enemy team"
-    };
+    let equipe = jeu.equipe(jeu.est_tour_joueur());
 
     rsx! {
         div { class: "equipe",
-            h1 { "Current team : {equipe_active}" }
+            h1 { "Current team : {equipe.nom()}" }
         }
     }
 }

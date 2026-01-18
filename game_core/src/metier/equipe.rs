@@ -2,16 +2,28 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Equipe {
+    nom: String,
     membres: HashMap<i8, u32>,
+    argent: u32,
 }
 
 impl Equipe {
     pub const NOMBRE_MAX_MEMBRES: i8 = 4;
 
-    pub fn new() -> Self {
+    pub fn new(nom: String) -> Self {
         Self {
+            nom,
             membres: HashMap::new(),
+            argent: 0,
         }
+    }
+
+    pub fn nom(&self) -> String {
+        self.nom.clone()
+    }
+
+    pub fn argent(&self) -> u32 {
+        self.argent
     }
 
     /// à partir de la position dans l'équipe

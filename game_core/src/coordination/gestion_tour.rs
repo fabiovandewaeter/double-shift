@@ -1,6 +1,6 @@
 use crate::{
     depots::depot_personnages::DepotPersonnages,
-    metier::{equipe::Equipe, etat_combat::EtatCombat, event::Event},
+    metier::{equipe::Equipe, event::Event},
     services::{service_equipe::ServiceEquipe, service_personnage::ServicePersonnage},
 };
 
@@ -87,28 +87,4 @@ impl GestionTour {
 
         Ok(false)
     }
-
-    /*
-    pub fn resoudre_tour(
-        &mut self,
-        depot: &mut DepotPersonnages,
-        equipe_joueur: &mut Equipe,
-        equipe_ennemie: &mut Equipe,
-    ) -> Result<EtatCombat, String> {
-        while !self.events.is_empty() {
-            let event = self.events.remove(0);
-
-            self.appliquer_event(event, depot, equipe_joueur, equipe_ennemie)?;
-
-            if ServiceEquipe::est_vaincue(equipe_joueur, depot) {
-                return Ok(EtatCombat::Defaite);
-            }
-            if ServiceEquipe::est_vaincue(equipe_ennemie, depot) {
-                return Ok(EtatCombat::Victoire);
-            }
-        }
-
-        Ok(EtatCombat::EnCours)
-    }
-    */
 }

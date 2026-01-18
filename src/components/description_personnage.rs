@@ -6,9 +6,10 @@ use crate::Route;
 #[component]
 pub fn DescriptionPersonnage(id: u32) -> Element {
     // récupérer perso
-    let signal_gestion_jeu = use_context::<Signal<GestionJeu>>();
-    let gestion_jeu = signal_gestion_jeu.read();
-    let option_perso = gestion_jeu.recuperer_personnage(id);
+    let signal_jeu = use_context::<Signal<GestionJeu>>();
+    let jeu = signal_jeu.read();
+    let depot_personnages = jeu.depot_personnages();
+    let option_perso = depot_personnages.recuperer_personnage(id);
 
     match option_perso {
         Some(perso) => rsx! {

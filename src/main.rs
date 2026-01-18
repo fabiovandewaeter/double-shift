@@ -52,8 +52,8 @@ fn App() -> Element {
             attaque: 10,
         },
     );
-    jeu.ajouter_membre_equipe_joueur(id_joueur, 0);
-    jeu.ajouter_membre_equipe_joueur(id_joueur2, 1);
+    jeu.ajouter_membre_equipe(id_joueur, 0, true);
+    jeu.ajouter_membre_equipe(id_joueur2, 1, true);
 
     let id_ennemi = jeu.creer_personnage(
         "DarkSasuke".to_string(),
@@ -62,7 +62,7 @@ fn App() -> Element {
             attaque: 5,
         },
     );
-    jeu.ajouter_membre_equipe_ennemie(id_ennemi, 0);
+    jeu.ajouter_membre_equipe(id_ennemi, 0, false);
 
     use_context_provider(|| Signal::new(jeu));
 
@@ -71,6 +71,20 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
+    }
+}
+
+/// Shared navbar component.
+#[component]
+fn Navbar() -> Element {
+    rsx! {
+        div { id: "navbar",
+            Link { to: Route::Home {}, "Home" }
+            Link { to: Route::PageCombat {}, "Combat" }
+            Link { to: Route::PagePersonnage { id: 0 }, "Personnage" }
+        }
+
+        Outlet::<Route> {}
     }
 }
 
@@ -131,19 +145,5 @@ fn PageCombat() -> Element {
                 BoutonsCombat {}
             }
         }
-    }
-}
-
-/// Shared navbar component.
-#[component]
-fn Navbar() -> Element {
-    rsx! {
-        div { id: "navbar",
-            Link { to: Route::Home {}, "Home" }
-            Link { to: Route::PageCombat {}, "Combat" }
-            Link { to: Route::PagePersonnage { id: 0 }, "Personnage" }
-        }
-
-        Outlet::<Route> {}
     }
 }

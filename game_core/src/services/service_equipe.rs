@@ -1,9 +1,6 @@
 use crate::{
     depots::depot_personnages::DepotPersonnages,
-    metier::{
-        equipe::{self, Equipe},
-        event::Event,
-    },
+    metier::{equipe::Equipe, event::Event},
     services::service_personnage::ServicePersonnage,
 };
 
