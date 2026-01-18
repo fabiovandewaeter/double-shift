@@ -23,7 +23,7 @@ impl Equipe {
         self.membres.get(&position).copied()
     }
 
-    pub fn recuperer_liste_membres(&self) -> Vec<u32> {
+    pub fn recuperer_liste_id_membres(&self) -> Vec<u32> {
         self.membres.values().copied().collect()
     }
 

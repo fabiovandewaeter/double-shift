@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::metier::personnage::Personnage;
+use crate::metier::personnage::{Personnage, StatsPersonnage};
 
 #[derive(Clone, Debug)]
 pub struct DepotPersonnages {
@@ -16,8 +16,8 @@ impl DepotPersonnages {
         }
     }
 
-    pub fn creer_personnage(&mut self, nom: String, pv_max: i32) -> u32 {
-        let perso = Personnage::new(nom, pv_max);
+    pub fn creer_personnage(&mut self, nom: String, stats: StatsPersonnage) -> u32 {
+        let perso = Personnage::new(nom, stats);
         let id_perso = self.prochain_id;
         self.personnages.insert(id_perso, perso);
         self.prochain_id += 1;

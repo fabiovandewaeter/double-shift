@@ -1,8 +1,14 @@
 use dioxus::prelude::*;
-use game_core::coordination::gestion_jeu::GestionJeu;
+use game_core::{
+    coordination::gestion_jeu::GestionJeu,
+    metier::{etat_combat::EtatCombat, personnage::StatsPersonnage},
+};
 
 use crate::components::{
-    combat::BoutonsCombat, description_equipe::DescriptionEquipe,
+    combat::{
+        boutons_combat::BoutonsCombat, description_combat::DescriptionCombat,
+        description_equipe::DescriptionEquipe, ecran_fin_combat::EcranFinCombat,
+    },
     description_personnage::DescriptionPersonnage,
 };
 
@@ -32,8 +38,20 @@ fn main() {
 #[component]
 fn App() -> Element {
     let mut jeu = GestionJeu::new();
-    let id_joueur = jeu.creer_personnage("Fabebou".to_string(), 100);
-    let id_ennemi = jeu.creer_personnage("DarkSasuke".to_string(), 100);
+    let id_joueur = jeu.creer_personnage(
+        "Fabebou".to_string(),
+        StatsPersonnage {
+            pv_max: 100,
+            attaque: 10,
+        },
+    );
+    let id_ennemi = jeu.creer_personnage(
+        "DarkSasuke".to_string(),
+        StatsPersonnage {
+            pv_max: 200,
+            attaque: 5,
+        },
+    );
     jeu.ajouter_membre_equipe_joueur(id_joueur, 0);
     jeu.ajouter_membre_equipe_ennemie(id_ennemi, 0);
 
@@ -84,10 +102,26 @@ fn PagePersonnage(id: u32) -> Element {
 
 #[component]
 fn PageCombat() -> Element {
+    let jeu_signal = use_context::<Signal<GestionJeu>>();
+    let jeu = jeu_signal.read();
+
+    let etat_combat = jeu.etat_combat();
+
     rsx! {
-        DescriptionEquipe { est_equipe_joueur: false }
-        DescriptionEquipe { est_equipe_joueur: true }
-        BoutonsCombat {}
+        div { class: "",
+            DescriptionCombat {}
+
+            if *etat_combat != EtatCombat::EnCours {
+                EcranFinCombat { etat: etat_combat.clone() }
+            }
+
+            DescriptionEquipe { est_equipe_joueur: false }
+            DescriptionEquipe { est_equipe_joueur: true }
+
+            if *etat_combat == EtatCombat::EnCours {
+                BoutonsCombat {}
+            }
+        }
     }
 }
 

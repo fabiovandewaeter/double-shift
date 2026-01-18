@@ -1,4 +1,4 @@
-use crate::depots::depot_personnages::DepotPersonnages;
+use crate::{depots::depot_personnages::DepotPersonnages, metier::event::Event};
 
 #[derive(Clone, Debug)]
 pub struct ServicePersonnage;
@@ -45,6 +45,24 @@ impl ServicePersonnage {
             return Err(format!("Personnage inexistante : {}", id));
         };
 
-        Ok(perso.pv > 0)
+        Ok(perso.pv <= 0)
+    }
+
+    pub fn jouer_tour(
+        id_attaquant: u32,
+        id_cible: u32,
+        depot: &DepotPersonnages,
+    ) -> Result<Event, String> {
+        let Some(attaquant) = depot.recuperer_personnage(id_attaquant) else {
+            return Err(format!("Personnage inexistante : {}", id_attaquant));
+        };
+
+        let degats = attaquant.attaque;
+
+        Ok(Event::FaireDegats {
+            id_cible,
+            quantite: degats as i32,
+            id_source: Some(id_attaquant),
+        })
     }
 }

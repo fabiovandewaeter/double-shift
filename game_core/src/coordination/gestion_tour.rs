@@ -17,6 +17,16 @@ impl GestionTour {
         self.events.push(event);
     }
 
+    pub fn ajouter_events(&mut self, events: Vec<Event>) {
+        for e in events {
+            self.events.push(e);
+        }
+    }
+
+    pub fn vider_events(&mut self) {
+        self.events.clear();
+    }
+
     pub fn appliquer_event(
         &mut self,
         event: Event,
@@ -26,22 +36,22 @@ impl GestionTour {
     ) -> Result<(), String> {
         match event {
             Event::FaireDegats {
-                cible_id,
+                id_cible,
                 quantite,
-                source_id,
+                id_source,
             } => {
-                ServicePersonnage::appliquer_degats(depot, cible_id, quantite)?;
+                ServicePersonnage::appliquer_degats(depot, id_cible, quantite)?;
 
-                if ServicePersonnage::est_mort(depot, cible_id)? {
-                    self.events.push(Event::Mort { id: cible_id });
+                if ServicePersonnage::est_mort(depot, id_cible)? {
+                    self.events.push(Event::Mort { id: id_cible });
                 }
             }
             Event::Soigner {
-                cible_id,
+                id_cible,
                 quantite,
-                source_id,
+                id_source,
             } => {
-                ServicePersonnage::appliquer_soins(depot, cible_id, quantite)?;
+                ServicePersonnage::appliquer_soins(depot, id_cible, quantite)?;
             }
             Event::Mort { id } => {
                 if ServiceEquipe::contient_membre(equipe_joueur, id) {
