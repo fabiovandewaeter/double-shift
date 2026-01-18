@@ -76,7 +76,7 @@ impl GestionJeu {
         &self.etat_combat
     }
 
-    pub fn prochain_tour(&mut self) -> Result<EtatCombat, String> {
+    pub fn demarrer_tour(&mut self) {
         let (equipe_active, equipe_passive) = if self.est_tour_joueur {
             (&self.equipe_joueur, &self.equipe_ennemie)
         } else {
@@ -87,19 +87,30 @@ impl GestionJeu {
             ServiceEquipe::jouer_tour(equipe_active, equipe_passive, &self.depot_personnages);
 
         self.gestion_tour.ajouter_events(nouveaux_events);
+    }
 
-        let resultat = self.gestion_tour.resoudre_tour(
+    /// retourne vrai si le tour et fini
+    pub fn executer_un_pas_tour(&mut self) -> Result<bool, String> {
+        self.gestion_tour.resourdre_un_event(
             &mut self.depot_personnages,
             &mut self.equipe_joueur,
             &mut self.equipe_ennemie,
         )?;
 
-        if resultat == EtatCombat::EnCours {
-            self.est_tour_joueur = !self.est_tour_joueur;
+        if ServiceEquipe::est_vaincue(&self.equipe_joueur, &self.depot_personnages) {
+            self.etat_combat = EtatCombat::Defaite;
+            return Ok(false);
+        }
+        if ServiceEquipe::est_vaincue(&self.equipe_ennemie, &self.depot_personnages) {
+            self.etat_combat = EtatCombat::Victoire;
+            return Ok(false);
         }
 
-        self.etat_combat = resultat.clone();
+        if self.gestion_tour.est_termine() {
+            self.est_tour_joueur = !self.est_tour_joueur;
+            return Ok(false);
+        }
 
-        Ok(resultat)
+        Ok(true)
     }
 }
