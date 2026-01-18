@@ -1,11 +1,18 @@
 use dioxus::prelude::*;
-use game_core::coordination::gestion_jeu::GestionJeu;
+use game_core::{coordination::gestion_jeu::GestionJeu, metier::etat_partie::EtatPartie};
 
 #[component]
 pub fn DescriptionCombat() -> Element {
     let signal_jeu = use_context::<Signal<GestionJeu>>();
     let jeu = signal_jeu.read();
-    let combat = jeu.combat_actuel();
+
+    let EtatPartie::Combat(combat) = jeu.etat_partie() else {
+        return rsx! {
+            div {
+                h1 { "No battle started" }
+            }
+        };
+    };
 
     let equipe = jeu.equipe(combat.est_tour_joueur());
 

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use game_core::{
     coordination::gestion_jeu::GestionJeu,
-    metier::{etat_combat::EtatCombat, personnage::StatsPersonnage},
+    metier::{etat_combat::EtatCombat, etat_partie::EtatPartie},
 };
 
 use crate::components::{
@@ -10,6 +10,7 @@ use crate::components::{
         description_equipe::DescriptionEquipe, ecran_fin_combat::EcranFinCombat,
     },
     description_personnage::DescriptionPersonnage,
+    magasin::liste_achats::ListeAchats,
 };
 
 mod components;
@@ -19,7 +20,7 @@ mod components;
 enum Route {
     #[layout(Navbar)]
     #[route("/")]
-    Home {},
+    PageJeu {},
     #[route("/page_combat")]
     PageCombat{},
     #[route("/page_perso/:id")]
@@ -38,16 +39,6 @@ fn main() {
 #[component]
 fn App() -> Element {
     let mut jeu = GestionJeu::new();
-
-    // let id_ennemi = jeu.creer_personnage(
-    //     "DarkSasuke".to_string(),
-    //     StatsPersonnage {
-    //         pv_max: 200,
-    //         attaque: 5,
-    //     },
-    // );
-    // jeu.ajouter_membre_equipe(id_ennemi, 0, false);
-
     use_context_provider(|| Signal::new(jeu));
 
     rsx! {
@@ -63,7 +54,7 @@ fn App() -> Element {
 fn Navbar() -> Element {
     rsx! {
         div { id: "navbar",
-            Link { to: Route::Home {}, "Home" }
+            Link { to: Route::PageJeu {}, "Game" }
             Link { to: Route::PageCombat {}, "Combat" }
             Link { to: Route::PagePersonnage { id: 0 }, "Personnage" }
         }
@@ -72,31 +63,19 @@ fn Navbar() -> Element {
     }
 }
 
-#[component]
-pub fn Hero() -> Element {
-    rsx! {
-        div { id: "hero",
-            img { src: HEADER_SVG, id: "header" }
-            div { id: "links",
-                a { href: "https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }
-                a { href: "https://dioxuslabs.com/awesome", "🚀 Awesome Dioxus" }
-                a { href: "https://github.com/dioxus-community/", "📡 Community Libraries" }
-                a { href: "https://github.com/DioxusLabs/sdk", "⚙️ Dioxus Development Kit" }
-                a { href: "https://marketplace.visualstudio.com/items?itemName=DioxusLabs.dioxus",
-                    "💫 VSCode Extension"
-                }
-                a { href: "https://discord.gg/XgGxMSkvUM", "👋 Community Discord" }
-            }
-        }
-    }
-}
-
 /// Home page
 #[component]
-fn Home() -> Element {
-    rsx! {
-        Hero {}
+fn PageJeu() -> Element {
+    let signal_jeu = use_context::<Signal<GestionJeu>>();
+    let jeu = signal_jeu.read();
 
+    match jeu.etat_partie() {
+        EtatPartie::Combat(_) => rsx! {
+            PageCombat {}
+        },
+        EtatPartie::Magasin(_) => rsx! {
+            PageMagasin {}
+        },
     }
 }
 
@@ -112,7 +91,14 @@ fn PageCombat() -> Element {
     let jeu_signal = use_context::<Signal<GestionJeu>>();
     let jeu = jeu_signal.read();
 
-    let etat_combat = jeu.combat_actuel().etat_combat();
+    let EtatPartie::Combat(combat) = jeu.etat_partie() else {
+        return rsx! {
+            div {
+                h1 { "No battle started" }
+            }
+        };
+    };
+    let etat_combat = combat.etat_combat();
 
     rsx! {
         div { class: "",
@@ -129,5 +115,12 @@ fn PageCombat() -> Element {
                 BoutonsCombat {}
             }
         }
+    }
+}
+
+#[component]
+fn PageMagasin() -> Element {
+    rsx! {
+        ListeAchats {}
     }
 }

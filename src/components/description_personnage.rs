@@ -19,8 +19,8 @@ pub fn DescriptionPersonnage(id: u32) -> Element {
 
                 div { class: "text-lg",
                     ul {
-                        li { "HP: {perso.pv}" }
-                        li { "Max HP: {perso.pv_max}" }
+                        li { "HP: {perso.stats.pv}" }
+                        li { "Max HP: {perso.stats.pv_max}" }
                     }
                 }
 

@@ -13,10 +13,10 @@ impl ServicePersonnage {
             return Err(format!("Cible inexistante : {}", cible_id));
         };
 
-        perso.pv -= quantite;
+        perso.stats.pv -= quantite;
 
-        if perso.pv < 0 {
-            perso.pv = 0;
+        if perso.stats.pv < 0 {
+            perso.stats.pv = 0;
         }
 
         Ok(())
@@ -31,10 +31,10 @@ impl ServicePersonnage {
             return Err(format!("Cible inexistante : {}", cible_id));
         };
 
-        perso.pv += quantite;
+        perso.stats.pv += quantite;
 
-        if perso.pv > perso.pv_max {
-            perso.pv = perso.pv_max;
+        if perso.stats.pv > perso.stats.pv_max {
+            perso.stats.pv = perso.stats.pv_max;
         }
 
         Ok(())
@@ -45,7 +45,7 @@ impl ServicePersonnage {
             return Err(format!("Personnage inexistante : {}", id));
         };
 
-        Ok(perso.pv <= 0)
+        Ok(perso.stats.pv <= 0)
     }
 
     pub fn jouer_tour(
@@ -57,7 +57,7 @@ impl ServicePersonnage {
             return Err(format!("Personnage inexistante : {}", id_attaquant));
         };
 
-        let degats = attaquant.attaque;
+        let degats = attaquant.stats.attaque;
 
         Ok(Event::FaireDegats {
             id_cible,

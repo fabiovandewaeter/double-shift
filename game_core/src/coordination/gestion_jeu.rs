@@ -1,22 +1,27 @@
 use crate::{
     coordination::gestion_tour::GestionTour,
-    depots::depot_personnages::DepotPersonnages,
+    depots::{depot_items::DepotItems, depot_personnages::DepotPersonnages},
     metier::{
-        combat::Combat,
         equipe::Equipe,
         etat_combat::EtatCombat,
-        personnage::{Personnage, StatsPersonnage},
+        etat_partie::EtatPartie,
+        personnage::{Personnage, Stats},
     },
-    services::{service_combat::ServiceCombat, service_equipe::ServiceEquipe},
+    services::{
+        service_combat::ServiceCombat, service_equipe::ServiceEquipe,
+        service_magasin::ServiceMagasin,
+    },
 };
 
 pub struct GestionJeu {
     depot_personnages: DepotPersonnages,
+    depot_items: DepotItems,
     equipe_joueur: Equipe,
     equipe_ennemie: Equipe,
     gestion_tour: GestionTour,
-    combat_actuel: Combat,
+    // combat_actuel: Combat,
     niveau_actuel: u32,
+    etat_partie: EtatPartie,
 }
 
 impl GestionJeu {
@@ -26,33 +31,35 @@ impl GestionJeu {
 
         let mut jeu = Self {
             depot_personnages: DepotPersonnages::new(),
+            depot_items: DepotItems::new(),
             equipe_joueur: Equipe::new("Player's team".to_owned()),
             equipe_ennemie: Equipe::new("Enemy team".to_owned()),
             gestion_tour: GestionTour::new(),
-            combat_actuel,
+            // combat_actuel,
             niveau_actuel,
+            etat_partie: EtatPartie::Combat(combat_actuel),
         };
 
         jeu.lancer_prochain_combat();
 
         // TODO à supprimer
-        let id_joueur = jeu.creer_personnage(
-            "Fabebou".to_string(),
-            StatsPersonnage {
-                pv_max: 100,
-                attaque: 10,
-            },
-        );
-        let id_joueur2 = jeu.creer_personnage(
-            "Abebou".to_string(),
-            StatsPersonnage {
-                pv_max: 100,
-                attaque: 10,
-            },
-        );
-
+        let id_joueur = jeu
+            .depot_personnages
+            .creer_personnage("Fabebou".to_string(), Stats::new(100, 10));
+        let id_joueur2 = jeu
+            .depot_personnages
+            .creer_personnage("Abebou".to_string(), Stats::new(100, 10));
         jeu.ajouter_membre_equipe(id_joueur, 0, true);
         jeu.ajouter_membre_equipe(id_joueur2, 1, true);
+        let id_item = jeu
+            .depot_items
+            .creer_item("Sword".to_string(), Stats::new(0, 10));
+        let id_item2 = jeu
+            .depot_items
+            .creer_item("Shield".to_string(), Stats::new(10, 0));
+        let id_item3 = jeu
+            .depot_items
+            .creer_item("SwordShield".to_string(), Stats::new(10, 10));
 
         jeu
     }
@@ -71,11 +78,20 @@ impl GestionJeu {
     pub fn depot_personnages(&self) -> &DepotPersonnages {
         &self.depot_personnages
     }
-    pub fn creer_personnage(&mut self, nom: String, stats: StatsPersonnage) -> u32 {
-        self.depot_personnages.creer_personnage(nom, stats)
-    }
+    // pub fn creer_personnage(&mut self, nom: String, stats: Stats) -> u32 {
+    //     self.depot_personnages.creer_personnage(nom, stats)
+    // }
     pub fn recuperer_personnage_mut(&mut self, id: u32) -> Option<&mut Personnage> {
         self.depot_personnages.recuperer_personnage_mut(id)
+    }
+    // pub fn creer_item(&mut self, nom: String, stats: Stats) -> u32 {
+    //     self.depot_items.creer_item(nom, stats)
+    // }
+    pub fn depot_items(&self) -> &DepotItems {
+        &self.depot_items
+    }
+    pub fn etat_partie(&self) -> &EtatPartie {
+        &self.etat_partie
     }
 
     pub fn ajouter_membre_equipe(
@@ -92,12 +108,16 @@ impl GestionJeu {
     }
 
     // --- gestion tour ---
-    pub fn combat_actuel(&self) -> &Combat {
-        &self.combat_actuel
-    }
+    // pub fn combat_actuel(&self) -> &Combat {
+    //     &self.combat_actuel
+    // }
 
     pub fn demarrer_tour(&mut self) -> Result<(), String> {
-        let (equipe_active, equipe_passive) = if self.combat_actuel.est_tour_joueur() {
+        let EtatPartie::Combat(ref combat) = self.etat_partie else {
+            return Err("Aucun combat en cours".to_string());
+        };
+
+        let (equipe_active, equipe_passive) = if combat.est_tour_joueur() {
             (&self.equipe_joueur, &self.equipe_ennemie)
         } else {
             (&self.equipe_ennemie, &self.equipe_joueur)
@@ -113,6 +133,10 @@ impl GestionJeu {
 
     /// retourne vrai si le tour et fini
     pub fn executer_un_pas_tour(&mut self) -> Result<bool, String> {
+        let EtatPartie::Combat(ref mut combat) = self.etat_partie else {
+            return Err("Aucun combat en cours".to_string());
+        };
+
         self.gestion_tour.resourdre_un_event(
             &mut self.depot_personnages,
             &mut self.equipe_joueur,
@@ -120,7 +144,7 @@ impl GestionJeu {
         )?;
 
         let combat_fini = ServiceCombat::verifier_et_mettre_a_jour_etat(
-            &mut self.combat_actuel,
+            combat,
             &self.equipe_joueur,
             &self.equipe_ennemie,
             &self.depot_personnages,
@@ -131,7 +155,7 @@ impl GestionJeu {
         }
 
         if self.gestion_tour.est_termine() {
-            ServiceCombat::passer_tour_suivant(&mut self.combat_actuel);
+            ServiceCombat::passer_tour_suivant(combat);
             return Ok(false);
         }
 
@@ -143,15 +167,12 @@ impl GestionJeu {
         self.niveau_actuel += 1;
 
         let prochain_combat = ServiceCombat::creer_prochain_combat(self.niveau_actuel);
-        self.combat_actuel = prochain_combat;
+        self.etat_partie = EtatPartie::Combat(prochain_combat);
 
         self.equipe_ennemie = Equipe::new("Enemy team".to_string());
         let id_ennemi = self.depot_personnages.creer_personnage(
             format!("Goblin lvl {}", self.niveau_actuel),
-            StatsPersonnage {
-                pv_max: 10 * self.niveau_actuel as i32,
-                attaque: 10 * self.niveau_actuel,
-            },
+            Stats::new(10 * self.niveau_actuel as i32, 10 * self.niveau_actuel),
         );
         self.equipe_ennemie
             .ajouter_membre_equipe(id_ennemi, 0)
@@ -160,13 +181,19 @@ impl GestionJeu {
         self.gestion_tour = GestionTour::new();
     }
 
-    pub fn terminer_combat_et_recolter(&mut self) -> Result<(), String> {
-        if self.combat_actuel.etat_combat() != EtatCombat::Victoire {
+    pub fn terminer_combat_et_recolter_et_aller_au_magasin(&mut self) -> Result<(), String> {
+        let EtatPartie::Combat(ref combat) = self.etat_partie else {
+            return Err("Aucun combat en cours".to_string());
+        };
+
+        if combat.etat_combat() != EtatCombat::Victoire {
             return Err("Impossible de récolter : le combat n'est pas gagné".to_string());
         }
 
-        self.equipe_joueur
-            .ajouter_argent(self.combat_actuel.recompense());
+        self.equipe_joueur.ajouter_argent(combat.recompense());
+
+        let nouveau_magasin = ServiceMagasin::creer_prochain_magasin(self.niveau_actuel);
+        self.etat_partie = EtatPartie::Magasin(nouveau_magasin);
 
         Ok(())
     }

@@ -1,12 +1,23 @@
 use dioxus::prelude::*;
-use game_core::{coordination::gestion_jeu::GestionJeu, metier::etat_combat::EtatCombat};
+use game_core::{
+    coordination::gestion_jeu::GestionJeu,
+    metier::{etat_combat::EtatCombat, etat_partie::EtatPartie},
+};
 
 #[component]
 pub fn EcranFinCombat(etat: EtatCombat) -> Element {
     let mut signal_jeu = use_context::<Signal<GestionJeu>>();
     let jeu = signal_jeu.read();
 
-    let recompense = jeu.combat_actuel().recompense();
+    let EtatPartie::Combat(combat) = jeu.etat_partie() else {
+        return rsx! {
+            div {
+                h1 { "No battle started" }
+            }
+        };
+    };
+
+    let recompense = combat.recompense();
 
     match etat {
         EtatCombat::Victoire => rsx! {
@@ -19,8 +30,8 @@ pub fn EcranFinCombat(etat: EtatCombat) -> Element {
                 class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded",
                 onclick: move |_| {
                     let mut jeu_mut = signal_jeu.write();
-                    jeu_mut.terminer_combat_et_recolter();
-                    jeu_mut.lancer_prochain_combat();
+                    jeu_mut.terminer_combat_et_recolter_et_aller_au_magasin();
+                    // jeu_mut.lancer_prochain_combat();
                 },
                 "Next Battle ->"
             }

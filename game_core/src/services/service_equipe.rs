@@ -18,7 +18,7 @@ impl ServiceEquipe {
         membres_ids
             .iter()
             .all(|id| match depot.recuperer_personnage(*id) {
-                Some(p) => p.pv <= 0,
+                Some(p) => p.stats.pv <= 0,
                 None => true,
             })
     }

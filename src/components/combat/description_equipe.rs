@@ -19,15 +19,14 @@ pub fn DescriptionEquipe(est_equipe_joueur: bool) -> Element {
                 }
             }
             for i in 0..Equipe::NOMBRE_MAX_MEMBRES {
-
                 match equipe.recuperer_id_membre(i).and_then(|id| depot.recuperer_personnage(id)) {
                     Some(perso) => rsx! {
                         div { class: "text-lg",
                             ul {
                                 li { "Nom: {perso.nom}" }
-                                li { "HP: {perso.pv}" }
-                                li { "Max HP: {perso.pv_max}" }
-                                li { "Attack: {perso.attaque}" }
+                                li { "HP: {perso.stats.pv}" }
+                                li { "Max HP: {perso.stats.pv_max}" }
+                                li { "Attack: {perso.stats.attaque}" }
                             }
                             span { "---" }
                         }
