@@ -38,31 +38,15 @@ fn main() {
 #[component]
 fn App() -> Element {
     let mut jeu = GestionJeu::new();
-    let id_joueur = jeu.creer_personnage(
-        "Fabebou".to_string(),
-        StatsPersonnage {
-            pv_max: 100,
-            attaque: 10,
-        },
-    );
-    let id_joueur2 = jeu.creer_personnage(
-        "Abebou".to_string(),
-        StatsPersonnage {
-            pv_max: 100,
-            attaque: 10,
-        },
-    );
-    jeu.ajouter_membre_equipe(id_joueur, 0, true);
-    jeu.ajouter_membre_equipe(id_joueur2, 1, true);
 
-    let id_ennemi = jeu.creer_personnage(
-        "DarkSasuke".to_string(),
-        StatsPersonnage {
-            pv_max: 200,
-            attaque: 5,
-        },
-    );
-    jeu.ajouter_membre_equipe(id_ennemi, 0, false);
+    // let id_ennemi = jeu.creer_personnage(
+    //     "DarkSasuke".to_string(),
+    //     StatsPersonnage {
+    //         pv_max: 200,
+    //         attaque: 5,
+    //     },
+    // );
+    // jeu.ajouter_membre_equipe(id_ennemi, 0, false);
 
     use_context_provider(|| Signal::new(jeu));
 
@@ -128,20 +112,20 @@ fn PageCombat() -> Element {
     let jeu_signal = use_context::<Signal<GestionJeu>>();
     let jeu = jeu_signal.read();
 
-    let etat_combat = jeu.etat_combat();
+    let etat_combat = jeu.combat_actuel().etat_combat();
 
     rsx! {
         div { class: "",
             DescriptionCombat {}
 
-            if *etat_combat != EtatCombat::EnCours {
+            if etat_combat != EtatCombat::EnCours {
                 EcranFinCombat { etat: etat_combat.clone() }
             }
 
             DescriptionEquipe { est_equipe_joueur: false }
             DescriptionEquipe { est_equipe_joueur: true }
 
-            if *etat_combat == EtatCombat::EnCours {
+            if etat_combat == EtatCombat::EnCours {
                 BoutonsCombat {}
             }
         }

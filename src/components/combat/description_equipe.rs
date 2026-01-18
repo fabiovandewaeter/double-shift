@@ -27,6 +27,7 @@ pub fn DescriptionEquipe(est_equipe_joueur: bool) -> Element {
                                 li { "Nom: {perso.nom}" }
                                 li { "HP: {perso.pv}" }
                                 li { "Max HP: {perso.pv_max}" }
+                                li { "Attack: {perso.attaque}" }
                             }
                             span { "---" }
                         }

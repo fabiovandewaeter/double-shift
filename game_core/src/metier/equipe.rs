@@ -21,9 +21,11 @@ impl Equipe {
     pub fn nom(&self) -> String {
         self.nom.clone()
     }
-
     pub fn argent(&self) -> u32 {
         self.argent
+    }
+    pub fn ajouter_argent(&mut self, argent: u32) {
+        self.argent += argent;
     }
 
     /// à partir de la position dans l'équipe
