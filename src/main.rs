@@ -1,4 +1,12 @@
 use dioxus::prelude::*;
+use game_core::coordination::gestion_jeu::GestionJeu;
+
+use crate::components::{
+    combat::BoutonsCombat, description_equipe::DescriptionEquipe,
+    description_personnage::DescriptionPersonnage,
+};
+
+mod components;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -6,8 +14,10 @@ enum Route {
     #[layout(Navbar)]
     #[route("/")]
     Home {},
-    #[route("/blog/:id")]
-    Blog { id: i32 },
+    #[route("/page_combat")]
+    PageCombat{},
+    #[route("/page_perso/:id")]
+    PagePersonnage{id: u32},
 }
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
@@ -21,9 +31,18 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+    let mut jeu = GestionJeu::new();
+    let id_joueur = jeu.creer_personnage("Fabebou".to_string(), 100);
+    let id_ennemi = jeu.creer_personnage("DarkSasuke".to_string(), 100);
+    jeu.ajouter_membre_equipe_joueur(id_joueur, 0);
+    jeu.ajouter_membre_equipe_ennemie(id_ennemi, 0);
+
+    use_context_provider(|| Signal::new(jeu));
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
     }
 }
@@ -31,15 +50,16 @@ fn App() -> Element {
 #[component]
 pub fn Hero() -> Element {
     rsx! {
-        div {
-            id: "hero",
+        div { id: "hero",
             img { src: HEADER_SVG, id: "header" }
             div { id: "links",
                 a { href: "https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }
                 a { href: "https://dioxuslabs.com/awesome", "🚀 Awesome Dioxus" }
                 a { href: "https://github.com/dioxus-community/", "📡 Community Libraries" }
                 a { href: "https://github.com/DioxusLabs/sdk", "⚙️ Dioxus Development Kit" }
-                a { href: "https://marketplace.visualstudio.com/items?itemName=DioxusLabs.dioxus", "💫 VSCode Extension" }
+                a { href: "https://marketplace.visualstudio.com/items?itemName=DioxusLabs.dioxus",
+                    "💫 VSCode Extension"
+                }
                 a { href: "https://discord.gg/XgGxMSkvUM", "👋 Community Discord" }
             }
         }
@@ -55,28 +75,19 @@ fn Home() -> Element {
     }
 }
 
-/// Blog page
 #[component]
-pub fn Blog(id: i32) -> Element {
+fn PagePersonnage(id: u32) -> Element {
     rsx! {
-        div {
-            id: "blog",
+        DescriptionPersonnage { id }
+    }
+}
 
-            // Content
-            h1 { "This is blog #{id}!" }
-            p { "In blog #{id}, we show how the Dioxus router works and how URL parameters can be passed as props to our route components." }
-
-            // Navigation links
-            Link {
-                to: Route::Blog { id: id - 1 },
-                "Previous"
-            }
-            span { " <---> " }
-            Link {
-                to: Route::Blog { id: id + 1 },
-                "Next"
-            }
-        }
+#[component]
+fn PageCombat() -> Element {
+    rsx! {
+        DescriptionEquipe { est_equipe_joueur: false }
+        DescriptionEquipe { est_equipe_joueur: true }
+        BoutonsCombat {}
     }
 }
 
@@ -84,16 +95,10 @@ pub fn Blog(id: i32) -> Element {
 #[component]
 fn Navbar() -> Element {
     rsx! {
-        div {
-            id: "navbar",
-            Link {
-                to: Route::Home {},
-                "Home"
-            }
-            Link {
-                to: Route::Blog { id: 1 },
-                "Blog"
-            }
+        div { id: "navbar",
+            Link { to: Route::Home {}, "Home" }
+            Link { to: Route::PageCombat {}, "Combat" }
+            Link { to: Route::PagePersonnage { id: 0 }, "Personnage" }
         }
 
         Outlet::<Route> {}
