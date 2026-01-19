@@ -81,9 +81,10 @@ impl GestionJeu {
     // pub fn creer_personnage(&mut self, nom: String, stats: Stats) -> u32 {
     //     self.depot_personnages.creer_personnage(nom, stats)
     // }
-    pub fn recuperer_personnage_mut(&mut self, id: u32) -> Option<&mut Personnage> {
-        self.depot_personnages.recuperer_personnage_mut(id)
-    }
+    // normalement on a pas besoin de rendre accessible en mut des trucs metiers dans l'UI
+    // pub fn recuperer_personnage_mut(&mut self, id: u32) -> Option<&mut Personnage> {
+    //     self.depot_personnages.recuperer_personnage_mut(id)
+    // }
     // pub fn creer_item(&mut self, nom: String, stats: Stats) -> u32 {
     //     self.depot_items.creer_item(nom, stats)
     // }
